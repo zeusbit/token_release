@@ -89,8 +89,10 @@ contract ZNCToken is StandardToken,owned {
     uint256 public team_total_lock_day;
     string public name = "ZNC Token";
     string public symbol = "ZNC";
-    string public version = "V0.1.0";
+    string public version = "V0.2.0";
     uint public decimals = 12;
+
+    uint lock_unit = 1 days;//lock units.
 
 
     mapping (address => uint) presale_IDs;
@@ -106,8 +108,8 @@ contract ZNCToken is StandardToken,owned {
 
     function ZNCToken(uint _totalSupply,uint256 _presale_lock_day,uint256 _team_total_lock_day,uint _team_lock_epoch) public{
         startTime = now;
-        presale_lock_day = _presale_lock_day * 1 minutes;
-        team_total_lock_day = _team_total_lock_day * 1 minutes;
+        presale_lock_day = _presale_lock_day * lock_unit;
+        team_total_lock_day = _team_total_lock_day * lock_unit;
         team_lock_epoch = _team_lock_epoch;
 
         _supply = _totalSupply * 10 ** uint256(decimals);  
@@ -169,9 +171,9 @@ contract ZNCToken is StandardToken,owned {
 
     function release_team_coin(address _to) public onlyOwner returns (bool success)   {
         require (balances[team_address] > 0);
-        require (now > last_release_date + team_lock_epoch * 1 minutes );
+        require (now > last_release_date + team_lock_epoch * lock_unit );
         
-        uint epoch_release_count = (now - last_release_date)  / (team_lock_epoch * 1 minutes) * release_count_epoch;
+        uint epoch_release_count = (now - last_release_date)  / (team_lock_epoch * lock_unit) * release_count_epoch;
        
         if(balances[team_address]>epoch_release_count){
             epoch_release_count = epoch_release_count;
@@ -181,7 +183,7 @@ contract ZNCToken is StandardToken,owned {
         
         balances[team_address] -= epoch_release_count;
         balances[_to] += epoch_release_count;
-        last_release_date += epoch_release_count/release_count_epoch * (team_lock_epoch * 1 minutes);
+        last_release_date += epoch_release_count/release_count_epoch * (team_lock_epoch * lock_unit);
         team_lock_count -= epoch_release_count;
 
         Transfer(team_address, _to, epoch_release_count);
